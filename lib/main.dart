@@ -6,8 +6,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 void main() => runApp(new MyApp());
 
 class MyApp extends StatefulWidget {
-  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-
   // This widget is the root of your application.
   @override
   MyAppState createState() {
@@ -31,7 +29,7 @@ class MyAppState extends State<MyApp> {
 
   Widget _handle() {
     return StreamBuilder<FirebaseUser>(
-      stream: widget.firebaseAuth.onAuthStateChanged,
+      stream: firebaseAuth.onAuthStateChanged,
       builder: (BuildContext context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting)
           return widgetLoading();
@@ -58,7 +56,18 @@ class MyAppState extends State<MyApp> {
   Widget mainScreen() {
     return Scaffold(
       body: Center(
-        child: Text('mainScrren'),
+        child: Column(
+          children: <Widget>[
+            Text('mainScrren'),
+            RaisedButton(
+              child: Text('Signout'),
+              onPressed: () {
+                googleSignIn.signOut();
+                firebaseAuth.signOut();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -73,20 +82,17 @@ class MyAppState extends State<MyApp> {
       ),
     );
   }
+  GoogleSignIn googleSignIn = GoogleSignIn();
+  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
   void signIn() async {
-    GoogleSignIn googleSignIn = GoogleSignIn();
-
     GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-    if(googleSignInAccount != null) {
-      print("null obtained");
       GoogleSignInAuthentication googleSignInAuthentication =
       await googleSignInAccount.authentication;
       if (await googleSignIn.isSignedIn())
         print("sign in google");
-      FirebaseUser user = await widget.firebaseAuth.signInWithGoogle(
+      FirebaseUser user = await firebaseAuth.signInWithGoogle(
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken);
-    }
   }
 }
