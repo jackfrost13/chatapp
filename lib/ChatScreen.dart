@@ -110,16 +110,21 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             child: IconButton(
                 icon: Icon(Icons.send),
-                onPressed: () => storeMessage(textEditingController)),
+                onPressed: () {
+                  String msg = textEditingController.text.trim();
+                  if(msg.length >0) {
+                    storeMessage(msg);
+                    textEditingController.clear();
+                  }
+
+                }),
           ),
         ],
       ),
     );
   }
 
-  void storeMessage(TextEditingController t) {
-    String text = t.text.toString().trim();
-    if (text.length == 0) return;
+  void storeMessage(String text) {
     print("inside store");
     int time = DateTime.now().millisecondsSinceEpoch;
 
@@ -132,6 +137,5 @@ class _ChatScreenState extends State<ChatScreen> {
       'photoUrl': firebaseUser.photoUrl,
       'email': firebaseUser.email,
     });
-    t.clear();
   }
 }
