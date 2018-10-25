@@ -112,7 +112,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       FirebaseStorage.instance.ref().child("img$time.jpg");
                   StorageUploadTask uploadTask = storage.putFile(imageFile);
                   StorageTaskSnapshot t = await uploadTask.onComplete;
-                  String url = t.ref.getDownloadURL().toString();
+                  String url = await t.ref.getDownloadURL();
                   storeMessage(null, url);
                 }),
           ),
