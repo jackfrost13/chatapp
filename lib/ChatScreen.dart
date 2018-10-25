@@ -5,10 +5,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ChatScreen extends StatefulWidget {
   final FirebaseUser firebaseUser;
   final GoogleSignIn googleSignIn;
+
   ChatScreen(this.firebaseUser, this.googleSignIn);
+
   @override
   _ChatScreenState createState() => _ChatScreenState(firebaseUser);
 }
@@ -52,6 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final reference = Firestore.instance
       .collection("messages")
       .orderBy('timestamp', descending: true);
+
   Widget showChat(BuildContext context) {
     return Flexible(
       child: StreamBuilder(
@@ -59,42 +63,55 @@ class _ChatScreenState extends State<ChatScreen> {
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             return snapshot.hasData
                 ? ListView(
-              reverse: true,
-              children: snapshot.data.documents.map((DocumentSnapshot docSnaphot) => messageCard(docSnaphot.data)).toList(),
-            )
+                    reverse: true,
+                    children: snapshot.data.documents
+                        .map((DocumentSnapshot docSnapshot) =>
+                            messageCard(docSnapshot.data))
+                        .toList(),
+                  )
                 : Container();
           }),
-    );}
+    );
+  }
 
-  Widget messageCard(Map message) => Card(
-    child: Row(
-      children: <Widget>[
-        CircleAvatar(
-          radius: 25.0,
-          backgroundImage: NetworkImage(
-              message['photoUrl']),
+  Widget messageCard(Map message) => Container(
+        margin: EdgeInsets.only(top: 20.0, bottom: 30.0),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
+                  child: CircleAvatar(
+                    radius: 25.0,
+                    backgroundImage: NetworkImage(message['photoUrl']),
+                  ),
+                ),
+                Column(
+                  children: <Widget>[
+                    Text(message['email']),
+                    message['text'] != null
+                        ? Text(message['text'])
+                        : Container(),
+                    message['uploadUrl'] != null
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.network(
+                              message['uploadUrl'],
+                              height: 100.0,
+                              width: 100.0,
+                              semanticLabel: 'xyzzz',
+                            ),
+                          )
+                        : Container(),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        Column(
-          children: <Widget>[
-            Text(message['email']),
-            message['text'] != null
-                ? Text(message['text'])
-                : Container(),
-            message['uploadUrl'] !=
-                null
-                ? Image.network(
-              message['uploadUrl'],
-              height: 100.0,
-              width: 100.0,
-              semanticLabel: 'xyzzz',
-            )
-                : Container(),
-          ],
-        ),
-      ],
-    ),
-  );
-
+      );
 
   Widget keyboardInput(BuildContext context) {
     TextEditingController textEditingController = TextEditingController();
