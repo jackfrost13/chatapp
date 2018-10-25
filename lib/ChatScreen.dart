@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'dart:async';
 class ChatScreen extends StatefulWidget {
   FirebaseUser firebaseUser;
-  ChatScreen(this.firebaseUser);
+  GoogleSignIn googleSignIn;
+  ChatScreen(this.firebaseUser, this.googleSignIn);
   @override
   _ChatScreenState createState() => _ChatScreenState(firebaseUser);
 }
@@ -22,58 +24,78 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Chatscreen'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () {
+              widget.googleSignIn.disconnect();
+              FirebaseAuth.instance.signOut();
+            },
+            tooltip: 'SignOut',
+          )
+        ],
       ),
       body: Container(
         child: Column(
           children: <Widget>[
             showChat(context),
             Divider(
-              height: 2.0,
+              height: 20.0,
             ),
             keyboardInput(context),
+            Text('ChatScreen'),
           ],
         ),
       ),
     );
   }
 
-  final reference = Firestore.instance
+  var  reference = Firestore.instance
       .collection("messages")
       .orderBy('timestamp', descending: true);
+  StreamSubscription<QuerySnapshot> subscription;
+  List<DocumentSnapshot> chatInstance;
+  @override
+  void initState() {
+    super.initState();
+    subscription = reference.snapshots().listen((datasnapshot) {
+      setState(() {
+        chatInstance = datasnapshot.documents;
+      });
+    });
+  }
+  @override
+  void dispose() {
+    subscription?.cancel();
+    super.dispose();
+  }
+
   Widget showChat(BuildContext context) {
-    return Flexible(
-      child: StreamBuilder(
-          stream: reference.snapshots(),
-          builder: (context, snapshot) {
-            return snapshot.hasData
-                ? ListView.builder(
-                    reverse: true,
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (
-                      context,
-                      int index,
-                    ) =>
-                        Card(
-                          child: Row(
-                            children: <Widget>[
-                              CircleAvatar(
-                                radius: 25.0,
-                                backgroundImage: NetworkImage(
-                                    snapshot.data.documents[index]['photoUrl']),
-                              ),
-                              Column(
-                                children: <Widget>[
-                                  Text(snapshot.data.documents[index]['email']),
-                                  Text(snapshot.data.documents[index]['text']),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                  )
-                : Container();
-          }),
-    );
+    chatInstance.forEach((DocumentSnapshot snapshot) {
+      return Card(
+        child: Row(
+          children: <Widget>[
+            CircleAvatar(
+              radius: 25.0,
+              backgroundImage: NetworkImage(
+                  snapshot.data['photoUrl']),
+            ),
+            Column(
+              children: <Widget>[
+                Text(snapshot.data['email']),
+                snapshot.data['uploadUrl'] != null
+                    ? Image(image: NetworkImage(snapshot.data['uploadUrl']),
+                  fit: BoxFit.contain,)
+                    : Container(),
+                snapshot.data['text'] != null
+                    ? Text(snapshot.data['text'])
+                    : Container(),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget keyboardInput(BuildContext context) {
@@ -85,19 +107,16 @@ class _ChatScreenState extends State<ChatScreen> {
             child: IconButton(
                 icon: Icon(Icons.camera_enhance),
                 onPressed: () async {
-                  File imageFile =await ImagePicker.pickImage(source: ImageSource.gallery);
+                  File imageFile =
+                      await ImagePicker.pickImage(source: ImageSource.gallery);
                   int time = DateTime.now().millisecondsSinceEpoch;
-                  StorageReference storage  = FirebaseStorage.instance.ref().child("img${time}.jpg");
+                  StorageReference storage =
+                      FirebaseStorage.instance.ref().child("img$time.jpg");
                   StorageUploadTask uploadTask = storage.putFile(imageFile);
-                  String url = await storage.getDownloadURL();
-                  var t =uploadTask.onComplete;
-                  print("t = $t");
-                  setState(() {
-                    print("Url is $url at time ${DateTime.now()}");
-                  });
-
-
-            }),
+                  StorageTaskSnapshot t = await uploadTask.onComplete;
+                  String url = t.ref.getDownloadURL().toString();
+                  storeMessage(null, url);
+                }),
           ),
           Flexible(
             child: TextField(
@@ -112,11 +131,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 icon: Icon(Icons.send),
                 onPressed: () {
                   String msg = textEditingController.text.trim();
-                  if(msg.length >0) {
-                    storeMessage(msg);
+                  if (msg.length > 0) {
+                    storeMessage(msg, null);
                     textEditingController.clear();
                   }
-
                 }),
           ),
         ],
@@ -124,7 +142,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void storeMessage(String text) {
+  void storeMessage(String text, String url) {
     print("inside store");
     int time = DateTime.now().millisecondsSinceEpoch;
 
@@ -136,6 +154,7 @@ class _ChatScreenState extends State<ChatScreen> {
       'timestamp': time,
       'photoUrl': firebaseUser.photoUrl,
       'email': firebaseUser.email,
+      'uploadUrl': url,
     });
   }
 }

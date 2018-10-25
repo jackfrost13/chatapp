@@ -1,98 +1,58 @@
-import 'package:flutter/material.dart';
-//import 'loginScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:chatapp_firebase/ChatScreen.dart';
+import 'package:chatapp_firebase/loginScreen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-void main() => runApp(new MyApp());
-
-class MyApp extends StatefulWidget {
-  // This widget is the root of your application.
-  @override
-  MyAppState createState() {
-    return new MyAppState();
-  }
+void main()
+{
+  runApp(ChatApp());
 }
 
-class MyAppState extends State<MyApp> {
+class ChatApp extends StatefulWidget {
+  @override
+  _ChatAppState createState() => _ChatAppState();
+}
+
+class _ChatAppState extends State<ChatApp> {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'ChatApp',
-      theme: new ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: _handle(),
+    return MaterialApp(
+      title: 'Chat App',
+      home: _handleAuth(),
       debugShowCheckedModeBanner: false,
     );
   }
+}
+FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+GoogleSignIn googleSignIn = GoogleSignIn();
+Widget _handleAuth()
+{
+  return StreamBuilder<FirebaseUser>(
+    stream: firebaseAuth.onAuthStateChanged,
+    builder: (context,snapshot) {
+      if(snapshot.connectionState == ConnectionState.none)
+        return loadingWidget();
+      else if (snapshot.hasData) {
+        return ChatScreen(snapshot.data,googleSignIn);
+      }
+        else{
+        return LoginScreen(firebaseAuth, googleSignIn);
+      }
+    },
+  );
+}
 
+Widget loadingWidget()
+{
+  waiting();
+  return Scaffold(
+    body: Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
+}
 
-  Widget _handle() {
-    return StreamBuilder<FirebaseUser>(
-      stream: firebaseAuth.onAuthStateChanged,
-      builder: (BuildContext context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting)
-          return widgetLoading();
-        else {
-          if (snapshot.hasData) {
-            print(snapshot.data);
-            return mainScreen();
-          } else
-            return login();
-        }
-      },
-    );
-  }
-
-  Widget widgetLoading() {
-//    waiting();
-    return Scaffold(
-      body: Center(
-        child: Text('waitingLoading'),
-      ),
-    );
-  }
-
-  Widget mainScreen() {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Text('mainScrren'),
-            RaisedButton(
-              child: Text('Signout'),
-              onPressed: () {
-                googleSignIn.signOut();
-                firebaseAuth.signOut();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget login() {
-    return Container(
-      child: Center(
-        child: RaisedButton(
-          child: Text('Login'),
-          onPressed: signIn,
-        ),
-      ),
-    );
-  }
-  GoogleSignIn googleSignIn = GoogleSignIn();
-  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-
-  void signIn() async {
-    GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-      GoogleSignInAuthentication googleSignInAuthentication =
-      await googleSignInAccount.authentication;
-      if (await googleSignIn.isSignedIn())
-        print("sign in google");
-      FirebaseUser user = await firebaseAuth.signInWithGoogle(
-          idToken: googleSignInAuthentication.idToken,
-          accessToken: googleSignInAuthentication.accessToken);
-  }
+Future<Null> waiting()async{
+  await Future.delayed(Duration(seconds: 3));
 }

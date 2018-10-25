@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class loginScreen extends StatefulWidget {
+class LoginScreen extends StatefulWidget {
   FirebaseAuth firebaseAuth;
-  loginScreen(this.firebaseAuth);
+  GoogleSignIn googleSignIn;
+  LoginScreen(this.firebaseAuth,this.googleSignIn);
 
   @override
-  loginScreenState createState() {
-    return new loginScreenState(firebaseAuth);
+  LoginScreenState createState() {
+    return new LoginScreenState();
   }
 }
 
-class loginScreenState extends State<loginScreen> {
-  FirebaseAuth firebaseAuth;
-  loginScreenState(this.firebaseAuth);
+class LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,11 +36,10 @@ class loginScreenState extends State<loginScreen> {
   }
 
   void signIn() async {
-    GoogleSignIn googleSignIn = GoogleSignIn();
-    GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    GoogleSignInAccount googleSignInAccount = await widget.googleSignIn.signIn();
     GoogleSignInAuthentication googleSignInAuthentication =
     await googleSignInAccount.authentication;
-    FirebaseUser user = await firebaseAuth.signInWithGoogle(
+    FirebaseUser user = await widget.firebaseAuth.signInWithGoogle(
         idToken: googleSignInAuthentication.idToken,
         accessToken: googleSignInAuthentication.accessToken);
   }
