@@ -62,12 +62,33 @@ class _ChatScreenState extends State<ChatScreen> {
           stream: reference.snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             return snapshot.hasData
-                ? ListView(
-                    reverse: true,
-                    children: snapshot.data.documents
-                        .map((DocumentSnapshot docSnapshot) =>
-                            messageCard(docSnapshot.data))
-                        .toList(),
+                ? Stack(
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue,
+                              Colors.lightBlue,
+                              Colors.white,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomRight,
+                            stops: [0.2, 0.3, 1.0],
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(),
+                        ),
+                      ),
+                      ListView(
+                        reverse: true,
+                        children: snapshot.data.documents
+                            .map((DocumentSnapshot docSnapshot) =>
+                                messageCard(docSnapshot.data))
+                            .toList(),
+                      ),
+                    ],
                   )
                 : Container();
           }),
