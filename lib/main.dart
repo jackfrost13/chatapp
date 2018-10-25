@@ -14,6 +14,8 @@ class ChatApp extends StatefulWidget {
 }
 
 class _ChatAppState extends State<ChatApp> {
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,7 +48,7 @@ Widget loadingWidget() {
   waiting();
   return Scaffold(
     body: Center(
-      child: CircularProgressIndicator(),
+      child: RefreshProgressIndicator(),
     ),
   );
 }
