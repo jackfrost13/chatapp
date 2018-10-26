@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "389382053709-6b3eip5u0toc5nh1q4r7epqbp9pctdbr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.coderelic.chatapp",
+            "certificate_hash": "14e2276f0be3904edfac7bccb86ad692b1995f1b"
+          }
+        },
+        {
           "client_id": "389382053709-udms7akgrttoep6kjc6lopa0035qv06v.apps.googleusercontent.com",
           "client_type": 3
         }
