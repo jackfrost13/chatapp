@@ -45,7 +45,6 @@ class _ChatScreenState extends State<ChatScreen> {
               height: 20.0,
             ),
             keyboardInput(context),
-            Text('ChatScreen'),
           ],
         ),
       ),
@@ -71,10 +70,12 @@ class _ChatScreenState extends State<ChatScreen> {
                               Colors.blue,
                               Colors.lightBlue,
                               Colors.white,
+                              Colors.yellow,
+                              Colors.orange,
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomRight,
-                            stops: [0.2, 0.3, 1.0],
+                            stops: [0.1, 0.2,0.60,0.75, 1.0],
                           ),
                         ),
                         child: Center(
@@ -84,9 +85,19 @@ class _ChatScreenState extends State<ChatScreen> {
                       ListView(
                         reverse: true,
                         children: snapshot.data.documents
-                            .map((DocumentSnapshot docSnapshot) =>
-                                messageCard(docSnapshot.data))
-                            .toList(),
+                            .map((DocumentSnapshot docSnapshot) {
+                          return Row(
+                            mainAxisAlignment:
+                                firebaseUser.email == docSnapshot.data['email']
+                                    ? MainAxisAlignment.end
+                                    : MainAxisAlignment.start,
+                            children: <Widget>[
+                              firebaseUser.email == docSnapshot.data['email']
+                                  ? usersMessageCard(docSnapshot.data)
+                                  : othersMessageCard(docSnapshot.data),
+                            ],
+                          );
+                        }).toList(),
                       ),
                     ],
                   )
@@ -95,66 +106,103 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget messageCard(Map message) => Container(
-        margin: EdgeInsets.only(top: 5.0, bottom: 5.0),
-        child: Row(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                CircleAvatar(
-                  radius: 25.0,
-                  backgroundImage: NetworkImage(message['photoUrl']),
-                ),
-              ],
+  Widget othersMessageCard(Map message) {
+    ImageProvider imageMessage() => NetworkImage(message['uploadUrl']);
+    return Container(
+      margin: EdgeInsets.only(top: 5.0, bottom: 5.0),
+      child: Row(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: CircleAvatar(
+              radius: 25.0,
+              backgroundImage: NetworkImage(message['photoUrl']),
             ),
-            Card(
-              color: Colors.white.withOpacity(0.75),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: <Widget>[
-                    message['uploadUrl'] != null
-                        ? Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.network(
-                              message['uploadUrl'],
-                              height: 100.0,
-                              width: 100.0,
-                              semanticLabel: 'xyzzz',
+          ),
+          Card(
+            color: Colors.white.withOpacity(0.75),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
+                  message['uploadUrl'] != null
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                    child: Image(
+                      image: imageMessage(),
+                      width: MediaQuery.of(context).size.width * .6,
+                      fit: BoxFit.fitWidth,
+                    ),
+                        )
+                      : Container(),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: message['text'] != null
+                        ? Text(
+                            message['text'],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
                             ),
                           )
                         : Container(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: message['text'] != null
-                          ? Text(
-                              message['text'],
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                              ),
-                            )
-                          : Container(),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        Text(
-                          message['email'],
-                          style: TextStyle(
-                            fontWeight: FontWeight.w100,
-                            fontSize: 11.0,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget usersMessageCard(Map message) {
+    ImageProvider imageMessage() => NetworkImage(message['uploadUrl']);
+    return Container(
+      margin: EdgeInsets.only(top: 5.0, bottom: 5.0),
+      child: Row(
+        children: <Widget>[
+          Card(
+            color: Colors.white.withOpacity(0.75),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
+                  message['uploadUrl'] != null
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image(
+                            image: imageMessage(),
+                            width: MediaQuery.of(context).size.width * .6,
+                            fit: BoxFit.fitWidth,
+                          ),
+                        )
+                      : Container(),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: message['text'] != null
+                        ? Text(
+                            message['text'],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                            ),
+                          )
+                        : Container(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: CircleAvatar(
+              radius: 25.0,
+              backgroundImage: NetworkImage(message['photoUrl']),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget keyboardInput(BuildContext context) {
     TextEditingController textEditingController = TextEditingController();
