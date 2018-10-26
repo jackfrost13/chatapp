@@ -4,8 +4,7 @@ import 'package:chatapp_firebase/ChatScreen.dart';
 import 'package:chatapp_firebase/loginScreen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-void main()
-{
+void main() {
   runApp(ChatApp());
 }
 
@@ -15,6 +14,8 @@ class ChatApp extends StatefulWidget {
 }
 
 class _ChatAppState extends State<ChatApp> {
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,35 +25,34 @@ class _ChatAppState extends State<ChatApp> {
     );
   }
 }
+
 FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 GoogleSignIn googleSignIn = GoogleSignIn();
-Widget _handleAuth()
-{
+
+Widget _handleAuth() {
   return StreamBuilder<FirebaseUser>(
     stream: firebaseAuth.onAuthStateChanged,
-    builder: (context,snapshot) {
-      if(snapshot.connectionState == ConnectionState.none)
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.none)
         return loadingWidget();
       else if (snapshot.hasData) {
-        return ChatScreen(snapshot.data,googleSignIn);
-      }
-        else{
+        return ChatScreen(snapshot.data, googleSignIn);
+      } else {
         return LoginScreen(firebaseAuth, googleSignIn);
       }
     },
   );
 }
 
-Widget loadingWidget()
-{
+Widget loadingWidget() {
   waiting();
   return Scaffold(
     body: Center(
-      child: CircularProgressIndicator(),
+      child: RefreshProgressIndicator(),
     ),
   );
 }
 
-Future<Null> waiting()async{
+Future<Null> waiting() async {
   await Future.delayed(Duration(seconds: 3));
 }

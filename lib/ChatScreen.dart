@@ -5,10 +5,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ChatScreen extends StatefulWidget {
   final FirebaseUser firebaseUser;
   final GoogleSignIn googleSignIn;
+
   ChatScreen(this.firebaseUser, this.googleSignIn);
+
   @override
   _ChatScreenState createState() => _ChatScreenState(firebaseUser);
 }
@@ -52,49 +55,106 @@ class _ChatScreenState extends State<ChatScreen> {
   final reference = Firestore.instance
       .collection("messages")
       .orderBy('timestamp', descending: true);
+
   Widget showChat(BuildContext context) {
     return Flexible(
       child: StreamBuilder(
           stream: reference.snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             return snapshot.hasData
-                ? ListView(
-              reverse: true,
-              children: snapshot.data.documents.map((DocumentSnapshot docSnaphot) => messageCard(docSnaphot.data)).toList(),
-            )
+                ? Stack(
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue,
+                              Colors.lightBlue,
+                              Colors.white,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomRight,
+                            stops: [0.2, 0.3, 1.0],
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(),
+                        ),
+                      ),
+                      ListView(
+                        reverse: true,
+                        children: snapshot.data.documents
+                            .map((DocumentSnapshot docSnapshot) =>
+                                messageCard(docSnapshot.data))
+                            .toList(),
+                      ),
+                    ],
+                  )
                 : Container();
           }),
-    );}
+    );
+  }
 
-  Widget messageCard(Map message) => Card(
-    child: Row(
-      children: <Widget>[
-        CircleAvatar(
-          radius: 25.0,
-          backgroundImage: NetworkImage(
-              message['photoUrl']),
-        ),
-        Column(
+  Widget messageCard(Map message) => Container(
+        margin: EdgeInsets.only(top: 5.0, bottom: 5.0),
+        child: Row(
           children: <Widget>[
-            Text(message['email']),
-            message['text'] != null
-                ? Text(message['text'])
-                : Container(),
-            message['uploadUrl'] !=
-                null
-                ? Image.network(
-              message['uploadUrl'],
-              height: 100.0,
-              width: 100.0,
-              semanticLabel: 'xyzzz',
-            )
-                : Container(),
+            Column(
+              children: <Widget>[
+                CircleAvatar(
+                  radius: 25.0,
+                  backgroundImage: NetworkImage(message['photoUrl']),
+                ),
+              ],
+            ),
+            Card(
+              color: Colors.white.withOpacity(0.75),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: <Widget>[
+                    message['uploadUrl'] != null
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.network(
+                              message['uploadUrl'],
+                              height: 100.0,
+                              width: 100.0,
+                              semanticLabel: 'xyzzz',
+                            ),
+                          )
+                        : Container(),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: message['text'] != null
+                          ? Text(
+                              message['text'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                              ),
+                            )
+                          : Container(),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text(
+                          message['email'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w100,
+                            fontSize: 11.0,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
-      ],
-    ),
-  );
-
+      );
 
   Widget keyboardInput(BuildContext context) {
     TextEditingController textEditingController = TextEditingController();
