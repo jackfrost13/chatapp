@@ -97,24 +97,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget messageCard(Map message) => Container(
         margin: EdgeInsets.only(top: 5.0, bottom: 5.0),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
+        child: Row(
+          children: <Widget>[
+            Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: CircleAvatar(
-                    radius: 25.0,
-                    backgroundImage: NetworkImage(message['photoUrl']),
-                  ),
+                CircleAvatar(
+                  radius: 25.0,
+                  backgroundImage: NetworkImage(message['photoUrl']),
                 ),
-                Column(
+              ],
+            ),
+            Card(
+              color: Colors.white.withOpacity(0.75),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
                   children: <Widget>[
-                    Text(message['email']),
-                    message['text'] != null
-                        ? Text(message['text'])
-                        : Container(),
                     message['uploadUrl'] != null
                         ? Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -126,11 +124,35 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           )
                         : Container(),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: message['text'] != null
+                          ? Text(
+                              message['text'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                              ),
+                            )
+                          : Container(),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text(
+                          message['email'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w100,
+                            fontSize: 11.0,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       );
 
