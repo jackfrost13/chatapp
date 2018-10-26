@@ -96,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget messageCard(Map message) => Container(
-        margin: EdgeInsets.only(top: 20.0, bottom: 30.0),
+        margin: EdgeInsets.only(top: 5.0, bottom: 5.0),
         child: Card(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
