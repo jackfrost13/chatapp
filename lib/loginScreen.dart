@@ -28,19 +28,16 @@ class LoginScreenState extends State<LoginScreen> {
                 Colors.blue,
                 Colors.lightBlue,
                 Colors.white,
+                Colors.yellow,
+                Colors.orange,
+                Colors.deepOrangeAccent
               ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomRight,
-              stops: [0.2, 0.3, 1.0]),
+            begin: Alignment.topCenter,
+            end: Alignment.bottomRight,
+              stops: [0.166, 0.33,0.50,0.667,0.84, 1.0],),
         ),
         child: Stack(
           children: <Widget>[
-            Align(
-              alignment: Alignment(-1.0, 1.0),
-              child: FlutterLogo(
-                size: 150.0,
-              ),
-            ),
             login(),
           ],
         ),

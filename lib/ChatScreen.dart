@@ -72,10 +72,11 @@ class _ChatScreenState extends State<ChatScreen> {
                               Colors.white,
                               Colors.yellow,
                               Colors.orange,
+                              Colors.deepOrangeAccent
                             ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomRight,
-                            stops: [0.1, 0.2,0.60,0.75, 1.0],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topRight,
+                            stops: [0.166, 0.33,0.50,0.667,0.84, 1.0],
                           ),
                         ),
                         child: Center(
